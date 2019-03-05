@@ -52,8 +52,7 @@ def gen_rsa(bits):
     return private_key, public_key
 
 
-#conn=start_conn()
-
+conn=start_conn()
 
 private_key,public_key = gen_rsa(1024)
 public_key_merchant=b""
@@ -62,13 +61,24 @@ with open('PubKM', 'rb') as f:
 #print(public_key_merchant)
 sha=hashlib.sha256()
 sha.update(b"cheiameasecreta")
-sha.update((str)(random.randint(100000000000,9999999999999)).encode())
+sha.update((str)(random.randint(100000000000,9999999999999)).encode())#adding salt
 aes_key=sha.digest()
-cipher = AESCipher(aes_key)
+aes_cipher = AESCipher(aes_key)
 public_key_merchant=RSA.importKey(public_key_merchant)
-encrypted = cipher.encrypt('Secret Message A')
-decrypted = cipher.decrypt(encrypted)
-print(decrypted)
-#conn.send(pu)
+
+
+#encrypting my pubk with hybrid encryption using merchant's pubk
+aes_key_encryped=public_key_merchant.encrypt(aes_key,32)
+public_key_encrypted=aes_cipher.encrypt(str(public_key))
+
+conn.send(public_key_encrypted)
+conn.send(aes_key_encryped[0])
+
+
+#encrypted = aes_cipher.encrypt('Secret Message A')
+#decrypted = aes_cipher.decrypt(encrypted)
+print(aes_key)
+
+conn.close()
 
     
