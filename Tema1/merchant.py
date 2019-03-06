@@ -5,6 +5,7 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 import socket
 import base64
+import sys
 from Crypto.Cipher import AES
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
@@ -50,18 +51,22 @@ class AESCipher:
 
 conn=start_conn()
 
+buf_size=conn.recv(3)
+public_key_encrypted_customer=conn.recv(int(buf_size))
+buf_size=conn.recv(3)
+aes_key_encrypted_customer=conn.recv(int(buf_size))
 
-public_key_encrypted_customer=conn.recv(1000000)
-aes_key_encrypted_customer=conn.recv(1000000)
+
 
 public_key_merchant=b""
 with open('PrivKM', 'rb') as f:
     private_key=f.read()
 private_key=RSA.importKey(private_key)
 aes_key_customer=private_key.decrypt(aes_key_encrypted_customer)
-
 aes_cipher = AESCipher(aes_key_customer)
-aes_cipher.decrypt(public_key_encrypted_customer)
+public_key_customer=aes_cipher.decrypt(public_key_encrypted_customer)
+
+print(public_key_customer)
 print(aes_key_customer)
 
 conn.close()

@@ -9,6 +9,7 @@ import base64
 from Crypto.Cipher import AES
 import hashlib
 import random
+import sys
 
 BS = 16
 def pad(s):
@@ -70,13 +71,17 @@ public_key_merchant=RSA.importKey(public_key_merchant)
 #encrypting my pubk with hybrid encryption using merchant's pubk
 aes_key_encryped=public_key_merchant.encrypt(aes_key,32)
 public_key_encrypted=aes_cipher.encrypt(str(public_key))
+aes_key_encryped=aes_key_encryped[0]
 
+conn.send(str(len(public_key_encrypted)).encode())
 conn.send(public_key_encrypted)
-conn.send(aes_key_encryped[0])
+conn.send(str(len(aes_key_encryped)).encode())
+conn.send(aes_key_encryped)
 
 
 #encrypted = aes_cipher.encrypt('Secret Message A')
 #decrypted = aes_cipher.decrypt(encrypted)
+print(public_key)
 print(aes_key)
 
 conn.close()
