@@ -65,32 +65,43 @@ sha.update(b"cheiameasecreta")
 sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
 aes_key=sha.digest()
 aes_cipher = AESCipher(aes_key)
-print(public_key_merchant)
+
 public_key_merchant=RSA.importKey(public_key_merchant)
 
 
 #encrypting my pubk with hybrid encryption using merchant's pubk
 aes_key_encryped=public_key_merchant.encrypt(aes_key,32)
-public_key_encrypted=aes_cipher.encrypt(str(public_key))
 aes_key_encryped=aes_key_encryped[0]
+public_key_encrypted=aes_cipher.encrypt(str(public_key))
+
 
 conn.send(str(len(public_key_encrypted)).encode())
 conn.send(public_key_encrypted)
 conn.send(str(len(aes_key_encryped)).encode())
 conn.send(aes_key_encryped)
 
-
 #print(public_key)
 #print(aes_key)
 
-buf_size=conn.recv(2)
-print(len(buf_size))
-SessionID=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
-SessionID_signed_merchant=conn.recv(int(buf_size))
+aes_key_merchant_encrypted=conn.recv(int(buf_size))
+buf_size=conn.recv(2)
+SessionID_encryped=conn.recv(int(buf_size))
+buf_size=conn.recv(3)
+SessionID_signed_merchant_encrypted=conn.recv(int(buf_size))
+
+#print(SessionID_encryped)
+#print(SessionID_signed_merchant_encrypted)
+private_key=RSA.importKey(private_key)
+aes_key_merchant=private_key.decrypt(aes_key_merchant_encrypted)
+aes_cipher_merchant=AESCipher(aes_key_merchant)
+
+SessionID=aes_cipher_merchant.decrypt(SessionID_encryped)
+SessionID_signed_merchant=aes_cipher_merchant.decrypt(SessionID_signed_merchant_encrypted)
 
 print(SessionID)
 print(SessionID_signed_merchant)
+
 
 conn.close()
 

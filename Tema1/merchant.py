@@ -7,6 +7,7 @@ from Crypto.Random import random
 import socket
 import base64
 import sys
+import hashlib
 from Crypto.Cipher import AES
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
@@ -57,8 +58,6 @@ public_key_encrypted_customer=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
 aes_key_encrypted_customer=conn.recv(int(buf_size))
 
-
-
 with open('PrivKM', 'rb') as f:
     private_key=f.read()
 private_key=RSA.importKey(private_key)
@@ -69,24 +68,47 @@ public_key_customer=aes_cipher.decrypt(public_key_encrypted_customer)
 public_key_customer=str(public_key_customer)[4:-2]
 public_key_customer=str(public_key_customer).replace("\\\\n",'\n')#fixing aes decryption result
 public_key_customer=str(public_key_customer).encode()
-
+public_key_customer=RSA.importKey(public_key_customer)
 #print(public_key_customer)
 #print(aes_key_customer)
 
 SessionID=Random.random.randint(100000000000,9999999999999)
 SessionID_signed=private_key.sign(SessionID,32)
-SessionID_signed=str(SessionID_signed[0]).encode()
+SessionID_signed=str(SessionID_signed[0])
+SessionID=str(SessionID)
 
-SessionID=str(SessionID).encode()
+#print(SessionID)
+#print(SessionID_signed)
+
+#Generating AES key
+sha=hashlib.sha256()
+sha.update(b"cheiameasimaisecreta")
+sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
+aes_key=sha.digest()
+aes_cipher = AESCipher(aes_key)
+
+aes_key_encryped=public_key_customer.encrypt(aes_key,32)
+aes_key_encryped=aes_key_encryped[0]
+
+SessionID_signed_encrypted=aes_cipher.encrypt(SessionID_signed)
+SessionID_signed_encrypted=SessionID_signed_encrypted
+#SessionID_signed_encrypted=str(SessionID_signed_encrypted).encode()
+
+SessionID_encrypted=aes_cipher.encrypt(SessionID)
+
+SessionID_encrypted=SessionID_encrypted
+#SessionID_encrypted=str(SessionID_encrypted).encode()
+
+
+conn.send(str(len(aes_key_encryped)).encode())
+conn.send(aes_key_encryped)
+conn.send(str(len(SessionID_encrypted)).encode())
+conn.send(SessionID_encrypted)
+conn.send(str(len(SessionID_signed_encrypted)).encode())
+conn.send(SessionID_signed_encrypted)
 
 print(SessionID)
 print(SessionID_signed)
-
-conn.send(str(len(SessionID)).encode())
-print(len(str(len(SessionID)).encode()))
-conn.send(SessionID)
-conn.send(str(len(SessionID_signed)).encode())
-conn.send(SessionID_signed)
 
 
 conn.close()
