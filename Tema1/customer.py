@@ -3,6 +3,7 @@
 import Crypto
 from Crypto.PublicKey import RSA
 from Crypto import Random
+from Crypto.Random import random
 import socket
 import json
 import base64
@@ -62,7 +63,7 @@ with open('PubKM', 'rb') as f:
 #print(public_key_merchant)
 sha=hashlib.sha256()
 sha.update(b"cheiameasecreta")
-sha.update((str)(random.randint(100000000000,9999999999999)).encode())#adding salt
+sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
 aes_key=sha.digest()
 aes_cipher = AESCipher(aes_key)
 public_key_merchant=RSA.importKey(public_key_merchant)

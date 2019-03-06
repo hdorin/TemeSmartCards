@@ -58,7 +58,6 @@ aes_key_encrypted_customer=conn.recv(int(buf_size))
 
 
 
-public_key_merchant=b""
 with open('PrivKM', 'rb') as f:
     private_key=f.read()
 private_key=RSA.importKey(private_key)
