@@ -10,7 +10,7 @@ import sys
 from Crypto.Cipher import AES
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
-PORT = 1237         # Port to listen on (non-privileged ports are > 1023)
+PORT = int(sys.argv[1])         # Port to listen on (non-privileged ports are > 1023)
 def gen_keys(bits):
     new_key = RSA.generate(bits) 
     public_key = new_key.publickey().exportKey("PEM") 
@@ -70,17 +70,23 @@ public_key_customer=str(public_key_customer)[4:-2]
 public_key_customer=str(public_key_customer).replace("\\\\n",'\n')#fixing aes decryption result
 public_key_customer=str(public_key_customer).encode()
 
-print(public_key_customer)
-print(aes_key_customer)
+#print(public_key_customer)
+#print(aes_key_customer)
 
-public_key_customer=RSA.importKey(public_key_customer)
 SessionID=Random.random.randint(100000000000,9999999999999)
-SessionID_encrypted=public_key_customer.encrypt(SessionID,32)
-SessionID_encrypted=str(SessionID_encrypted[0]).encode()
+SessionID_signed=private_key.sign(SessionID,32)
+SessionID_signed=str(SessionID_signed[0]).encode()
 
-print("SESSIONID=",SessionID_encrypted)
-conn.send(str(len(SessionID_encrypted)).encode())
-conn.send(SessionID_encrypted)
+SessionID=str(SessionID).encode()
+
+print(SessionID)
+print(SessionID_signed)
+
+conn.send(str(len(SessionID)).encode())
+print(len(str(len(SessionID)).encode()))
+conn.send(SessionID)
+conn.send(str(len(SessionID_signed)).encode())
+conn.send(SessionID_signed)
 
 
 conn.close()

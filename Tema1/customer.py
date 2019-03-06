@@ -39,7 +39,7 @@ class AESCipher:
 
 def start_conn():
     HOST = '127.0.0.1'  # The server's hostname or IP address
-    PORT = 1237         # The port used by the server
+    PORT = int(sys.argv[1])         # The port used by the server
 
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     soc.connect((HOST, PORT))
@@ -80,15 +80,17 @@ conn.send(str(len(aes_key_encryped)).encode())
 conn.send(aes_key_encryped)
 
 
-#encrypted = aes_cipher.encrypt('Secret Message A')
-#decrypted = aes_cipher.decrypt(encrypted)
-print(public_key)
-print(aes_key)
+#print(public_key)
+#print(aes_key)
 
+buf_size=conn.recv(2)
+print(len(buf_size))
+SessionID=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
-SessionID_encryped=conn.recv(int(buf_size))
-SessionID=private_key.decrypt(SessionID_encryped)#cred ca trebuie RSA Importkey aici
+SessionID_signed_merchant=conn.recv(int(buf_size))
+
 print(SessionID)
+print(SessionID_signed_merchant)
 
 conn.close()
 
