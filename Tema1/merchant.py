@@ -3,13 +3,14 @@
 import Crypto
 from Crypto.PublicKey import RSA
 from Crypto import Random
+from Crypto.Random import random
 import socket
 import base64
 import sys
 from Crypto.Cipher import AES
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
-PORT = 1234         # Port to listen on (non-privileged ports are > 1023)
+PORT = 1237         # Port to listen on (non-privileged ports are > 1023)
 def gen_keys(bits):
     new_key = RSA.generate(bits) 
     public_key = new_key.publickey().exportKey("PEM") 
@@ -65,7 +66,21 @@ aes_key_customer=private_key.decrypt(aes_key_encrypted_customer)
 aes_cipher = AESCipher(aes_key_customer)
 public_key_customer=aes_cipher.decrypt(public_key_encrypted_customer)
 
+public_key_customer=str(public_key_customer)[4:-2]
+public_key_customer=str(public_key_customer).replace("\\\\n",'\n')#fixing aes decryption result
+public_key_customer=str(public_key_customer).encode()
+
 print(public_key_customer)
 print(aes_key_customer)
+
+public_key_customer=RSA.importKey(public_key_customer)
+SessionID=Random.random.randint(100000000000,9999999999999)
+SessionID_encrypted=public_key_customer.encrypt(SessionID,32)
+SessionID_encrypted=str(SessionID_encrypted[0]).encode()
+
+print("SESSIONID=",SessionID_encrypted)
+conn.send(str(len(SessionID_encrypted)).encode())
+conn.send(SessionID_encrypted)
+
 
 conn.close()

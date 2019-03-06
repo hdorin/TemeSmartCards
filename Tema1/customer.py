@@ -9,7 +9,6 @@ import json
 import base64
 from Crypto.Cipher import AES
 import hashlib
-import random
 import sys
 
 BS = 16
@@ -40,7 +39,7 @@ class AESCipher:
 
 def start_conn():
     HOST = '127.0.0.1'  # The server's hostname or IP address
-    PORT = 1234         # The port used by the server
+    PORT = 1237         # The port used by the server
 
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     soc.connect((HOST, PORT))
@@ -66,6 +65,7 @@ sha.update(b"cheiameasecreta")
 sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
 aes_key=sha.digest()
 aes_cipher = AESCipher(aes_key)
+print(public_key_merchant)
 public_key_merchant=RSA.importKey(public_key_merchant)
 
 
@@ -84,6 +84,11 @@ conn.send(aes_key_encryped)
 #decrypted = aes_cipher.decrypt(encrypted)
 print(public_key)
 print(aes_key)
+
+buf_size=conn.recv(3)
+SessionID_encryped=conn.recv(int(buf_size))
+SessionID=private_key.decrypt(SessionID_encryped)#cred ca trebuie RSA Importkey aici
+print(SessionID)
 
 conn.close()
 
