@@ -62,8 +62,8 @@ with open('PrivKM', 'rb') as f:
     private_key=f.read()
 private_key=RSA.importKey(private_key)
 aes_key_customer=private_key.decrypt(aes_key_encrypted_customer)
-aes_cipher = AESCipher(aes_key_customer)
-public_key_customer=aes_cipher.decrypt(public_key_encrypted_customer)
+aes_cipher_customer = AESCipher(aes_key_customer)
+public_key_customer=aes_cipher_customer.decrypt(public_key_encrypted_customer)
 
 public_key_customer=str(public_key_customer)[4:-2]
 public_key_customer=str(public_key_customer).replace("\\\\n",'\n')#fixing aes decryption result
@@ -107,8 +107,18 @@ conn.send(SessionID_encrypted)
 conn.send(str(len(SessionID_signed_encrypted)).encode())
 conn.send(SessionID_signed_encrypted)
 
-print(SessionID)
-print(SessionID_signed)
+#print(SessionID)
+#print(SessionID_signed)
 
+buf_size=conn.recv(4)
+PM_json_encrypted=conn.recv(int(buf_size))
+buf_size=conn.recv(3)
+PO_json_encrypted=conn.recv(int(buf_size))
+
+PM_json=aes_cipher.decrypt(PM_json_encrypted)
+PO_json=aes_cipher.decrypt(PO_json_encrypted)
+
+print(PM_json)
+print(PO_json)
 
 conn.close()

@@ -99,8 +99,51 @@ aes_cipher_merchant=AESCipher(aes_key_merchant)
 SessionID=aes_cipher_merchant.decrypt(SessionID_encryped)
 SessionID_signed_merchant=aes_cipher_merchant.decrypt(SessionID_signed_merchant_encrypted)
 
-print(SessionID)
-print(SessionID_signed_merchant)
+#print(SessionID)
+#print(SessionID_signed_merchant)
+
+
+PI=dict()
+PI["CardN"]="1111222233334444"
+PI["CardExp"]="10/20"
+PI["CCode"]="123"
+PI["Sid"]=int(SessionID)
+PI["Amount"]=100
+PI["PubKC"]=str(public_key)
+PI["NC"]=Random.random.randint(100000000000,9999999999999)
+PI["M"]="Enter merchant name here"
+PI_json=json.dumps(PI)
+PI_json_hash=hashlib.sha256(PI_json.encode()).digest()
+PI_json_hash_signed=private_key.sign(PI_json_hash,32)
+
+PM=dict()
+PM["PI"]=PI_json
+PM["SigC"]=PI_json_hash_signed
+PM_json=json.dumps(PM)
+
+PO=dict()
+PO["OrderDesc"]="Enter order description here"
+PO["Sid"]=int(SessionID)
+PO["Amount"]=100
+PO_json=json.dumps(PO)
+PO_json_hash=hashlib.sha256(PO_json.encode()).digest()
+PO_json_hash_signed=private_key.sign(PO_json_hash,32)
+PO["SigC"]=PO_json_hash_signed
+
+PM_json_encrypted=aes_cipher_merchant.encrypt(str(PM_json))
+PO_json_encrypted=aes_cipher_merchant.encrypt(str(PO_json))
+
+conn.send(str(len(PM_json_encrypted)).encode())
+conn.send(PM_json_encrypted)
+conn.send(str(len(PO_json_encrypted)).encode())
+conn.send(PO_json_encrypted)
+
+
+#PO=json.loads(PO_json)
+
+print(PM_json)
+print(PO_json)
+
 
 
 conn.close()
