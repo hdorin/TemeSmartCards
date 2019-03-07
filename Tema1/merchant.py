@@ -111,6 +111,8 @@ conn.send(SessionID_signed_encrypted)
 #print(SessionID)
 #print(SessionID_signed)
 
+buf_size=conn.recv(3)
+aes_key_for_paymentgateway_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(4)
 PM_json_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
@@ -127,7 +129,6 @@ aux["amount"]=PO["Amount"]
 aux_json=json.dumps(aux)
 aux_json_hash=hashlib.sha256(aux_json.encode()).digest()
 aux_json_hash_signed=private_key.sign(aux_json_hash,32)
-
 
 
 conn.close()

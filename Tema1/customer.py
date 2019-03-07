@@ -105,11 +105,6 @@ SessionID_signed_merchant=aes_cipher_merchant.decrypt(SessionID_signed_merchant_
 
 #THIRD STEP
 
-public_key_payment_gateway=b""
-with open('PubKPG', 'rb') as f:
-        public_key_payment_gateway=f.read()
-public_key_payment_gateway=RSA.importKey(public_key_payment_gateway)
-
 PI=dict()
 PI["CardN"]="1111222233334444"
 PI["CardExp"]="10/20"
@@ -137,17 +132,30 @@ PO_json_hash=hashlib.sha256(PO_json.encode()).digest()
 PO_json_hash_signed=private_key.sign(PO_json_hash,32)
 PO["SigC"]=PO_json_hash_signed
 
+#Generating and AES key for Customer - Payment Gateway communication
+public_key_paymentgateway=b""
+with open('PubKPG', 'rb') as f:
+        public_key_paymentgateway=f.read()
+public_key_paymentgateway=RSA.importKey(public_key_paymentgateway)
+
+sha=hashlib.sha256()
+sha.update(b"incaocheiesecreta")
+sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
+aes_key_for_paymentgateway=sha.digest()
+aes_cipher_for_paymentgateway = AESCipher(aes_key_for_paymentgateway)
+aes_key_for_paymentgateway_encrypted=public_key_paymentgateway.encrypt(aes_key_for_paymentgateway,32)
+aes_key_for_paymentgateway_encrypted=aes_key_for_paymentgateway_encrypted[0]
+
+PM_json_encrypted=aes_cipher_for_paymentgateway.encrypt(str(PM_json))
 PM_json_encrypted=aes_cipher_merchant.encrypt(str(PM_json))
 PO_json_encrypted=aes_cipher_merchant.encrypt(str(PO_json))
 
+conn.send(str(len(aes_key_for_paymentgateway_encrypted)).encode())
+conn.send(aes_key_for_paymentgateway_encrypted)
 conn.send(str(len(PM_json_encrypted)).encode())
 conn.send(PM_json_encrypted)
 conn.send(str(len(PO_json_encrypted)).encode())
 conn.send(PO_json_encrypted)
-
-
-
-
 
 
 conn.close()
