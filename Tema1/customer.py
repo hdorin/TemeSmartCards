@@ -103,6 +103,13 @@ SessionID_signed_merchant=aes_cipher_merchant.decrypt(SessionID_signed_merchant_
 #print(SessionID_signed_merchant)
 
 
+#THIRD STEP
+
+public_key_payment_gateway=b""
+with open('PubKPG', 'rb') as f:
+        public_key_payment_gateway=f.read()
+public_key_payment_gateway=RSA.importKey(public_key_payment_gateway)
+
 PI=dict()
 PI["CardN"]="1111222233334444"
 PI["CardExp"]="10/20"
@@ -139,10 +146,7 @@ conn.send(str(len(PO_json_encrypted)).encode())
 conn.send(PO_json_encrypted)
 
 
-#PO=json.loads(PO_json)
 
-print(PM_json)
-print(PO_json)
 
 
 

@@ -7,6 +7,7 @@ from Crypto.Random import random
 import socket
 import base64
 import sys
+import json
 import hashlib
 from Crypto.Cipher import AES
 
@@ -117,8 +118,16 @@ PO_json_encrypted=conn.recv(int(buf_size))
 
 PM_json=aes_cipher.decrypt(PM_json_encrypted)
 PO_json=aes_cipher.decrypt(PO_json_encrypted)
+PO=json.loads(PO_json)
 
-print(PM_json)
-print(PO_json)
+aux=dict()
+aux["Sid"]=int(SessionID)
+aux["PubKC"]=str(public_key_customer)
+aux["amount"]=PO["Amount"]
+aux_json=json.dumps(aux)
+aux_json_hash=hashlib.sha256(aux_json.encode()).digest()
+aux_json_hash_signed=private_key.sign(aux_json_hash,32)
+
+
 
 conn.close()
