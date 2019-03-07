@@ -28,6 +28,15 @@ def start_conn():
     conn, addr = soc.accept()
     print('Connected by', addr)
     return conn
+def start_conn_paymentgateway():
+    HOST = '127.0.0.1'  # The server's hostname or IP address
+    PORT = int(sys.argv[1])+1         # The port used by the server
+
+    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    soc.connect((HOST, PORT))
+    print('Connected to', HOST,':', PORT)
+    return soc
+
 
 BS = 16
 def pad(s):
@@ -112,13 +121,29 @@ conn.send(SessionID_signed_encrypted)
 #print(SessionID_signed)
 
 buf_size=conn.recv(3)
-aes_key_for_paymentgateway_encrypted=conn.recv(int(buf_size))
+aes_key_customer_for_paymentgateway_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(4)
 PM_json_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
 PO_json_encrypted=conn.recv(int(buf_size))
 
-PM_json=aes_cipher.decrypt(PM_json_encrypted)
+#FOURTH STEP
+
+#Generating and AES key for Merchant - Payment Gateway communication
+public_key_paymentgateway=b""
+with open('PubKPG', 'rb') as f:
+        public_key_paymentgateway=f.read()
+public_key_paymentgateway=RSA.importKey(public_key_paymentgateway)
+
+sha=hashlib.sha256()
+sha.update(b"ultimameacheiesecreta")
+sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
+aes_key_for_paymentgateway=sha.digest()
+aes_cipher_for_paymentgateway = AESCipher(aes_key_for_paymentgateway)
+aes_key_for_paymentgateway_encrypted=public_key_paymentgateway.encrypt(aes_key_for_paymentgateway,32)
+aes_key_for_paymentgateway_encrypted=aes_key_for_paymentgateway_encrypted[0]
+
+PM_json_encrypted=aes_cipher_for_paymentgateway.encrypt(PM_json_encrypted)
 PO_json=aes_cipher.decrypt(PO_json_encrypted)
 PO=json.loads(PO_json)
 
@@ -130,5 +155,14 @@ aux_json=json.dumps(aux)
 aux_json_hash=hashlib.sha256(aux_json.encode()).digest()
 aux_json_hash_signed=private_key.sign(aux_json_hash,32)
 
+aux_json_hash_signed_encryped=aes_cipher_for_paymentgateway.encrypt(aux_json_hash_signed)
+
+conn_paymentgateway=start_conn_paymentgateway()
+conn_paymentgateway.send(str(len(aes_key_customer_for_paymentgateway_encrypted)).encode())
+conn_paymentgateway.send(aes_key_customer_for_paymentgateway_encrypted)
+conn_paymentgateway.send(str(len(aes_key_for_paymentgateway_encrypted)).encode())
+conn_paymentgateway.send(aes_key_for_paymentgateway_encrypted)
+conn_paymentgateway.send(str(len(aux_json_hash_signed_encryped)).encode())
+conn_paymentgateway.send(aes_key_for_paymentgateway_encrypted)
 
 conn.close()
