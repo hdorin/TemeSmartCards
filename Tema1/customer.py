@@ -147,8 +147,9 @@ aes_key_for_paymentgateway_encrypted=public_key_paymentgateway.encrypt(aes_key_f
 aes_key_for_paymentgateway_encrypted=aes_key_for_paymentgateway_encrypted[0]
 
 PM_json_encrypted=aes_cipher_for_paymentgateway.encrypt(str(PM_json))
-PM_json_encrypted=aes_cipher_merchant.encrypt(str(PM_json))
+PM_json_encrypted=aes_cipher_merchant.encrypt(str(PM_json_encrypted))
 PO_json_encrypted=aes_cipher_merchant.encrypt(str(PO_json))
+
 
 conn.send(str(len(aes_key_for_paymentgateway_encrypted)).encode())
 conn.send(aes_key_for_paymentgateway_encrypted)

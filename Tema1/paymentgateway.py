@@ -55,10 +55,11 @@ class AESCipher:
 conn=start_conn()
 buf_size=conn.recv(3)
 aes_key_customer_encrypted=conn.recv(int(buf_size))
-buf_size=conn.recv(4)
+buf_size=conn.recv(3)
 PM_json_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
 aux_json_encrypted=conn.recv(int(buf_size))
+
 
 
 

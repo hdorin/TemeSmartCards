@@ -121,6 +121,7 @@ conn.send(SessionID_signed_encrypted)
 #print(SessionID_signed)
 
 buf_size=conn.recv(3)
+#print(aes_keyaes_ke"BUFF=",buf_size)
 aes_key_customer_for_paymentgateway_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(4)
 PM_json_encrypted=conn.recv(int(buf_size))
@@ -143,9 +144,12 @@ aes_cipher_for_paymentgateway = AESCipher(aes_key_for_paymentgateway)
 aes_key_for_paymentgateway_encrypted=public_key_paymentgateway.encrypt(aes_key_for_paymentgateway,32)
 aes_key_for_paymentgateway_encrypted=aes_key_for_paymentgateway_encrypted[0]
 
-PM_json_encrypted=aes_cipher_for_paymentgateway.encrypt(PM_json_encrypted)
+
+PM_json_encrypted=aes_cipher.decrypt(PM_json_encrypted)
+PM_json_encrypted=aes_cipher_for_paymentgateway.encrypt(str(PM_json_encrypted))
 PO_json=aes_cipher.decrypt(PO_json_encrypted)
 PO=json.loads(PO_json)
+
 
 aux=dict()
 aux["Sid"]=int(SessionID)
@@ -154,9 +158,11 @@ aux["amount"]=PO["Amount"]
 aux_json=json.dumps(aux)
 aux_json_hash=hashlib.sha256(aux_json.encode()).digest()
 aux_json_hash_signed=private_key.sign(aux_json_hash,32)
+aux_json_hash_signed=aux_json_hash_signed[0]
+aux_json_hash_signed_encryped=aes_cipher_for_paymentgateway.encrypt(str(aux_json_hash_signed))
 
-aux_json_hash_signed_encryped=aes_cipher_for_paymentgateway.encrypt(aux_json_hash_signed)
 
+print("Connecting to Payment Gateway...")
 conn_paymentgateway=start_conn_paymentgateway()
 conn_paymentgateway.send(str(len(aes_key_customer_for_paymentgateway_encrypted)).encode())
 conn_paymentgateway.send(aes_key_customer_for_paymentgateway_encrypted)
@@ -166,3 +172,4 @@ conn_paymentgateway.send(str(len(aux_json_hash_signed_encryped)).encode())
 conn_paymentgateway.send(aes_key_for_paymentgateway_encrypted)
 
 conn.close()
+conn_paymentgateway.close()
