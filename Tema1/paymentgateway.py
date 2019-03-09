@@ -56,11 +56,11 @@ conn=start_conn()
 buf_size=conn.recv(3)
 aes_key_customer_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
+aes_key_merchant_encrypted=conn.recv(int(buf_size))
+buf_size=conn.recv(4)
 PM_json_encrypted=conn.recv(int(buf_size))
 buf_size=conn.recv(3)
 aux_json_encrypted=conn.recv(int(buf_size))
-
-
 
 
 conn.close()
