@@ -112,6 +112,7 @@ PI["CCode"]="123"
 PI["Sid"]=int(SessionID)
 PI["Amount"]=100
 PI["PubKC"]=str(public_key)
+print("PUB K=",str(public_key))
 PI["NC"]=Random.random.randint(100000000000,9999999999999)
 PI["M"]="Enter merchant name here"
 PI_json=json.dumps(PI)
