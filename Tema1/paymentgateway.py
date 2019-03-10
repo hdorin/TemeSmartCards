@@ -105,23 +105,40 @@ aux_json_hash_signed=int(aux_json_hash_signed)
 l=list()
 l.append(aux_json_hash_signed)
 aux_json_hash_signed=l.copy()
-print("JSON=",aux_json_hash_signed)
 
 public_key_customer=RSA.importKey(public_key_customer)
 PI_json_hash=hashlib.sha256(PI_json.encode()).digest()
-
 
 public_key_merchant=b""
 with open('PubKM', 'rb') as f:
         public_key_merchant=f.read()
 public_key_merchant=RSA.importKey(public_key_merchant)
 
-if(public_key_customer.verify(PI_json_hash,PM["SigC"])==False):
+if public_key_customer.verify(PI_json_hash,PM["SigC"])==False:
     Resp="Invalid customer signature!"
-elif(public_key_merchant.verify(aux_json_hash,aux_json_hash_signed)==False):
+elif public_key_merchant.verify(aux_json_hash,aux_json_hash_signed)==False:
     Resp="Invalid merchant signature!"
 else:
-    Resp="Valid signatures!"
+    Resp="Everything is OK!"
 
-print(Resp)
+aux=dict()
+aux["Resp"]=Resp
+aux["Sid"]=PI["Sid"]
+if Resp=="Everything is OK!":
+    aux["amount"]=PI["Amount"]
+else:
+    aux["Amount"]=0
+aux["NC"]=PI["NC"]
+aux_json=json.dumps(aux)
+aux_json_hash=hashlib.sha256(aux_json.encode()).digest()
+aux_json_hash_signed=private_key.sign(aux_json_hash,32)
+aux_json_hash_signed=aux_json_hash_signed[0]
+
+aux=dict()
+aux["Resp"]=Resp
+aux["Sid"]=PI["Sid"]
+aux["SigPG"]=aux_json_hash_signed
+
+
+print(aux)
 conn.close()
