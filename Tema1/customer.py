@@ -112,7 +112,7 @@ PI["CCode"]="123"
 PI["Sid"]=int(SessionID)
 PI["Amount"]=100
 PI["PubKC"]=str(public_key)
-print("PUB K=",str(public_key))
+#print("PUB K=",str(public_key))
 PI["NC"]=Random.random.randint(100000000000,9999999999999)
 PI["M"]="Enter merchant name here"
 PI_json=json.dumps(PI)
@@ -161,19 +161,19 @@ conn.send(PO_json_encrypted)
 
 #SIXTH STEP
 
-buf_size=conn.recv(3)
-print(buf_size)
-aux_json_encryped=conn.recv(int(buf_size))
+try:
+    conn.settimeout(5)
+    buf_size=conn.recv(3)
+    aux_json_encryped=conn.recv(int(buf_size))
+    aux_json=aes_cipher.decrypt(aux_json_encryped)
+    aux_json=str(aux_json)[5:-3]
+    aux=json.loads(aux_json)
+    print(aux["Resp"])
 
-aux_json=aes_cipher.decrypt(aux_json_encryped)
+except:
+    print("Socket timeout exceeded!")
 
-aux_json=str(aux_json)[5:-3]
-aux=json.loads(aux_json)
-
-
-print(aux["Resp"])
-
-
+print("Closing connection...")
 conn.close()
 
     

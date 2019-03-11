@@ -156,7 +156,4 @@ conn.send(aes_key_encryped)
 conn.send(str(len(aux_json_encrypted)).encode())
 conn.send(aux_json_encrypted)
 
-
-
-#print(aux)
 conn.close()
