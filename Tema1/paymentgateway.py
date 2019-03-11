@@ -138,7 +138,25 @@ aux=dict()
 aux["Resp"]=Resp
 aux["Sid"]=PI["Sid"]
 aux["SigPG"]=aux_json_hash_signed
+aux_json=json.dumps(aux)
+
+#Generating AES key
+sha=hashlib.sha256()
+sha.update(b"cheiameaceamaisecreta")
+sha.update((str)(Random.random.randint(100000000000,9999999999999)).encode())#adding salt
+aes_key=sha.digest()
+aes_cipher = AESCipher(aes_key)
+
+aux_json_encrypted=aes_cipher.encrypt(aux_json)
+aes_key_encryped=public_key_merchant.encrypt(aes_key,32)
+aes_key_encryped=aes_key_encryped[0]
+
+conn.send(str(len(aes_key_encryped)).encode())
+conn.send(aes_key_encryped)
+conn.send(str(len(aux_json_encrypted)).encode())
+conn.send(aux_json_encrypted)
 
 
-print(aux)
+
+#print(aux)
 conn.close()

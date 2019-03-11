@@ -175,6 +175,22 @@ conn_paymentgateway.send(PM_json_encrypted)
 conn_paymentgateway.send(str(len(aux_json_hash_signed_encryped)).encode())
 conn_paymentgateway.send(aux_json_hash_signed_encryped)
 
+#SIXTH STEP
+
+buf_size=conn_paymentgateway.recv(3)
+aes_key_paymentgateway_encrypted=conn_paymentgateway.recv(int(buf_size))
+buf_size=conn_paymentgateway.recv(3)
+aux_json_encrypted=conn_paymentgateway.recv(int(buf_size))
+
+aes_key_paymentgateway=private_key.decrypt(aes_key_paymentgateway_encrypted)
+aes_cipher_paymentgateway = AESCipher(aes_key_paymentgateway)
+aux_json=aes_cipher_paymentgateway.decrypt(aux_json_encrypted)
+
+aux_json_encrypted=aes_cipher_customer.encrypt(str(aux_json))
+
+conn.send(str(len(aux_json_encrypted)).encode())
+conn.send(aux_json_encrypted)
+
 
 conn.close()
 conn_paymentgateway.close()

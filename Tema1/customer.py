@@ -159,6 +159,20 @@ conn.send(PM_json_encrypted)
 conn.send(str(len(PO_json_encrypted)).encode())
 conn.send(PO_json_encrypted)
 
+#SIXTH STEP
+
+buf_size=conn.recv(3)
+print(buf_size)
+aux_json_encryped=conn.recv(int(buf_size))
+
+aux_json=aes_cipher.decrypt(aux_json_encryped)
+
+aux_json=str(aux_json)[5:-3]
+aux=json.loads(aux_json)
+
+
+print(aux["Resp"])
+
 
 conn.close()
 
